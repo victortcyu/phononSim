@@ -43,21 +43,13 @@ private:
 
 	G4VPhysicalVolume* fWorldPhys;
 	G4VPhysicalVolume* fSiTest;
-	G4CMPSurfaceProperty* topVacSurfProp;
-	G4CMPSurfaceProperty* botVacSurfProp;
-	G4CMPSurfaceProperty* wallVacSurfProp;
+	G4VPhysicalVolume* fabsorbLayer;
+	G4CMPSurfaceProperty* siVacuumSides;
+	G4CMPSurfaceProperty* siVacuumBottom;
 
-  //G4Material* fLiquidHelium;
-  //G4Material* fGermanium;
-  //G4Material* fAluminum;
-  //G4Material* fTungsten;
-  //G4VPhysicalVolume* fWorldPhys;
-  //G4CMPSurfaceProperty* topSurfProp;
-  //G4CMPSurfaceProperty* botSurfProp;
-  //G4CMPSurfaceProperty* wallSurfProp;
-  G4CMPElectrodeSensitivity* electrodeSensitivity;
+	 G4CMPElectrodeSensitivity* electrodeSensitivity;
 
-  G4bool fConstructed;		// Flag to not re-recreate surface properties
+	 G4bool fConstructed;
 };
 
 #endif

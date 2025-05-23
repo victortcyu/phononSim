@@ -31,17 +31,16 @@
 
 PhononDetectorConstruction::PhononDetectorConstruction()
     : fGalactic(0), fSi(0), fSiGe(0), fAl(0),
-    fWorldPhys(0), fSiTest(0), topVacSurfProp(0), botVacSurfProp(0),
-    wallVacSurfProp(0), fConstructed(false) {
+    fWorldPhys(0), fSiTest(0), siVacuumSides(0), siVacuumBottom(0),
+    fConstructed(false) {
     ;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 PhononDetectorConstruction::~PhononDetectorConstruction() {
-    delete topVacSurfProp;
-    delete botVacSurfProp;
-    delete wallVacSurfProp;
+    delete siVacuumSides;
+    delete siVacuumBottom;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -90,19 +89,40 @@ void PhononDetectorConstruction::DefineMaterials()
 
 void PhononDetectorConstruction::SetupGeometry()
 {
+    /* color setting code */
+    auto SetColour = [&](G4LogicalVolume* lv, G4double p_r, G4double p_g, G4double p_b) {
+        auto vis = new G4VisAttributes(G4Colour(p_r, p_g, p_b));
+        vis->SetVisibility(true);
+        lv->SetVisAttributes(vis);
+        };
+    //// 
+
+
     G4bool checkOverlaps = true;
-    const G4double sizeX = 1200 * um;
-    const G4double sizeY = 4800 * um;
-    const G4double halfX = sizeX / 2;
-    const G4double halfY = sizeY / 2;
-    const G4double tCap = 2 * nm;
-    const G4double tSpacer = 50 * nm;
-    const G4double tQW = 3 * nm;
-    const G4double tBuffer = 225 * nm;
-    const G4double totThk = tCap + tSpacer + tQW + tBuffer;
+    const G4double heterostr_X = 1200 * um;
+    const G4double heterostr_Y = 4800 * um;
+    const G4double heterostr_half_X = heterostr_X / 2;
+    const G4double heterostr_half_Y = heterostr_Y / 2;
+    const G4double cap_thickness = 2 * nm;
+    const G4double spacer_thickness = 50 * nm;
+    const G4double qw_thickness = 3 * nm;
+    const G4double buffer_thickness = 225 * nm;
+    const G4double heterostr_total_thickness = cap_thickness + spacer_thickness + qw_thickness
+        + buffer_thickness;
+    const G4double heterostr_total_half_thickness = heterostr_total_thickness / 2.0;
+
+    const G4double absorb_layer_thickness = 10 * nm;
+    const G4double absorb_layer_half_thickness = absorb_layer_thickness / 2.0;
+
+    const G4double substrate_thickness = 50 * um;
+    const G4double total_thickness = heterostr_total_half_thickness + absorb_layer_half_thickness
+        + substrate_thickness;
+    const G4double total_half_thickness = total_thickness / 2.0;
+
+
 
     auto solidWorld = new G4Box("World",                           // its name
-        1.2 * halfX, 1.2 * halfY, totThk);  // its size
+        1.2 * heterostr_half_X, 1.2 * heterostr_half_Y, 1.2 * total_half_thickness);  // its size
 
     auto logicWorld = new G4LogicalVolume(solidWorld,  // its solid
         fGalactic,                                       // its material
@@ -117,18 +137,22 @@ void PhononDetectorConstruction::SetupGeometry()
         0,                                         // copy number
         checkOverlaps);                            // overlaps checking
 
-    auto SetColour = [&](G4LogicalVolume* lv, G4double p_r, G4double p_g, G4double p_b) {
-        auto vis = new G4VisAttributes(G4Colour(p_r, p_g, p_b));
-        vis->SetVisibility(true);
-        lv->SetVisAttributes(vis);
-        };
+    // G4double z0 = -total_half_thickness;
 
-    // G4double z0 = -totThk / 2;
-
-    G4Box* siliconTest = new G4Box("SiBox", halfX, halfY, totThk * 0.8);
+    G4Box* siliconTest = new G4Box("SiBox", heterostr_half_X, 
+        heterostr_half_Y, heterostr_total_half_thickness);
     G4LogicalVolume* logicTest = new G4LogicalVolume(siliconTest, fSi, "SiBox");
     fSiTest = new G4PVPlacement(nullptr, G4ThreeVector(), logicTest, "SiBox", logicWorld, false, 0);
     SetColour(logicTest, 0.2, 0.2, 0.8);
+
+    G4Box* absorbLayer = new G4Box("bottomBox", heterostr_half_X,
+        heterostr_half_Y, absorb_layer_half_thickness);
+    G4LogicalVolume* absorbLogic = new G4LogicalVolume(absorbLayer, fGalactic, "bottomBox");
+    fabsorbLayer = new G4PVPlacement(nullptr, 
+        G4ThreeVector(0,0,-absorb_layer_half_thickness - heterostr_total_half_thickness), 
+        absorbLogic, "bottomBox", logicWorld, false, 0);
+    SetColour(absorbLogic, 0.2, 0.8, 0.2);
+
 
     /*G4Box* solidBuffer = new G4Box("SiGeBuffer", halfX, halfY, tBuffer / 2);
     G4LogicalVolume* logicBuffer = new G4LogicalVolume(solidBuffer, matSiGe, "SiGeBuffer");
@@ -181,7 +205,7 @@ void PhononDetectorConstruction::SetupGeometry()
     //                    worldLogical,false,0);
 
     ////
-    ////Germanium lattice information
+    ////Silicon lattice information
     ////
 
     G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
@@ -189,22 +213,9 @@ void PhononDetectorConstruction::SetupGeometry()
 
     // G4LatticePhysical assigns G4LatticeLogical a physical orientation
     G4LatticePhysical* SiPhysical = new G4LatticePhysical(SiLogical);
+    // aligns the lattice normal [1,0,0] with the +Z direction
     SiPhysical->SetMillerOrientation(1, 0, 0);
     LM->RegisterLattice(fSiTest, SiPhysical);
-
-
-
-    //// G4LatticeManager gives physics processes access to lattices by volume
-    //G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-    //G4LatticeLogical* GeLogical = LM->LoadLattice(fGermanium, "Ge");
-
-    //// G4LatticePhysical assigns G4LatticeLogical a physical orientation
-    //G4LatticePhysical* GePhysical = new G4LatticePhysical(GeLogical);
-    //GePhysical->SetMillerOrientation(1,0,0);
-    //LM->RegisterLattice(GePhys, GePhysical);
-
-    //// NOTE:  Above registration can also be done in single step:
-    //// G4LatticlePhysical* GePhysical = LM->LoadLattice(GePhys, "Ge");
 
     ////
     //// Aluminum - crystal end caps. This is where phonon hits are registered
@@ -258,35 +269,34 @@ void PhononDetectorConstruction::SetupGeometry()
         // the reflCutoff is chosen because then the Ziman fit is e^(-6), vanishing
         const G4double anhCutoff = 15000., reflCutoff = 618.;   // Units external
 
-        // TODO: set absorption to zero
-        topVacSurfProp = new G4CMPSurfaceProperty("TopVacSurf", 
+        // no absorption
+        siVacuumSides = new G4CMPSurfaceProperty("siVacuumSides", 
             1.0, 0.0, 0.0, 0.0,   // q absorption, q refl, e min k (to absorb), hole min k
-            0.3, 1.0, 0.0, 0.0);  // phonon abs, phonon refl (implying transmission), ph specular, p min k
-        topVacSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+            0.0, 1.0, 0.0 /*vanishing because it's only used at high frequency
+                           where we have no specular refl
+                           see G4CMPSurfaceProperty.cc documentation*/,
+            0.0);  // phonon abs, phonon refl (implying transmission), ph specular, p min k
+        siVacuumSides->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
             diffCoeffs, specCoeffs, GHz, GHz, GHz);
-        AttachPhononSensor(topVacSurfProp);
+        // AttachPhononSensor(siVacuumSides);
 
-        botVacSurfProp = new G4CMPSurfaceProperty("BotAlSurf", 1.0, 0.0, 0.0, 0.0,
-            0.3, 1.0, 0.0, 0.0);
-        botVacSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+        // high absorption
+        siVacuumBottom = new G4CMPSurfaceProperty("siVacuumBottom", 
+            1.0, 0.0, 0.0, 0.0,
+            1.0 /*can vary this parameter to vary the back-reflection*/, 0.0, 0.0, 0.0);
+        siVacuumBottom->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
             diffCoeffs, specCoeffs, GHz, GHz, GHz);
-        AttachPhononSensor(botVacSurfProp);
-
-        wallVacSurfProp = new G4CMPSurfaceProperty("WallSurf", 0.0, 1.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0);
-        wallVacSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-            diffCoeffs, specCoeffs, GHz, GHz, GHz);
+        // AttachPhononSensor(siVacuumBottom);
 
     }
     //
-    // Separate surfaces for sensors vs. bare sidewall
+    // Separate surfaces for the bottom vs other sides
     //
-    new G4CMPLogicalBorderSurface("detTop", fSiTest, fWorldPhys,
-        topVacSurfProp);
-    new G4CMPLogicalBorderSurface("detBot", fSiTest, fWorldPhys,
-        botVacSurfProp);
-    new G4CMPLogicalBorderSurface("detWall", fSiTest, fWorldPhys,
-        wallVacSurfProp);
+    new G4CMPLogicalBorderSurface("siWall", fSiTest, fWorldPhys,
+        siVacuumSides);
+    new G4CMPLogicalBorderSurface("siBottom", fSiTest, fabsorbLayer,
+        siVacuumBottom);
+
 
     //                                        
     // Visualization attributes
@@ -295,8 +305,6 @@ void PhononDetectorConstruction::SetupGeometry()
     G4VisAttributes* simpleBoxVisAtt = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0));
     simpleBoxVisAtt->SetVisibility(true);
     logicTest->SetVisAttributes(simpleBoxVisAtt);
-    //fGermaniumLogical->SetVisAttributes(simpleBoxVisAtt);
-    //fAluminumLogical->SetVisAttributes(simpleBoxVisAtt);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
