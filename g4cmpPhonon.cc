@@ -24,6 +24,7 @@
 #include "PhononActionInitialization.hh"
 #include "PhononConfigManager.hh"
 #include "PhononDetectorConstruction.hh"
+#include "PhononSteppingAction.hh"
 
 int main(int argc,char** argv)
 {

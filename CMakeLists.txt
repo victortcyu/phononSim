@@ -46,6 +46,7 @@ set(phonon_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononDetectorConstruction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononPrimaryGeneratorAction.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononSensitivity.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhononSteppingAction.cc
     )
     
 if(USE_GEANT4_STATIC_LIBS)

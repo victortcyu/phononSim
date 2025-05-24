@@ -8,8 +8,10 @@
 #include "PhononActionInitialization.hh"
 #include "PhononPrimaryGeneratorAction.hh"
 #include "G4CMPStackingAction.hh"
+#include "PhononSteppingAction.hh"
 
 void PhononActionInitialization::Build() const {
   SetUserAction(new PhononPrimaryGeneratorAction);
   SetUserAction(new G4CMPStackingAction);
+  SetUserAction(new PhononSteppingAction);
 } 
