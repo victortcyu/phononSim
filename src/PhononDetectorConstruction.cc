@@ -119,7 +119,8 @@ void PhononDetectorConstruction::SetupGeometry()
         + substrate_thickness;
     const G4double total_half_thickness = total_thickness / 2.0;
 
-
+    //const G4double trackHX = 25 * nm, trackHY = 25 * nm, trackHZ = 1.5 * nm;
+    const G4double trackHX = heterostr_half_X, trackHY = heterostr_half_Y, trackHZ = 1.5 * nm;
 
     auto solidWorld = new G4Box("World",                           // its name
         1.2 * heterostr_half_X, 1.2 * heterostr_half_Y, 1.2 * total_half_thickness);  // its size
@@ -153,6 +154,16 @@ void PhononDetectorConstruction::SetupGeometry()
         absorbLogic, "bottomBox", logicWorld, false, 0);
     SetColour(absorbLogic, 0.2, 0.8, 0.2);
 
+    G4Box* solidTrack = new G4Box("TrackingRegion", trackHX, trackHY, trackHZ);
+    G4LogicalVolume* logicTrack = new G4LogicalVolume(solidTrack, fSi, "TrackingRegion");
+    new G4PVPlacement(nullptr,                       // no rotation
+        // FIXME placement, this is just for testing
+        G4ThreeVector(0, 0, -heterostr_total_half_thickness / 2 + trackHZ),         // centered in mother
+        logicTrack,                   // daughter logical
+        "TrackingRegion",             // its name
+        logicTest,                    // mother logical
+        false,                        // not “many”
+        1);                           // copy number
 
     /*G4Box* solidBuffer = new G4Box("SiGeBuffer", halfX, halfY, tBuffer / 2);
     G4LogicalVolume* logicBuffer = new G4LogicalVolume(solidBuffer, matSiGe, "SiGeBuffer");

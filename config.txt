@@ -1,0 +1,45 @@
+# Crystal parameters, all confident
+cubic 5.499 Ang        # Lattice constant (Vegard's law, okay)
+stiffness 1 1 154.9 GPa  # C11 elastic constant https://sites.utexas.edu/ruihuang/files/2021/03/JMPS04.pdf
+stiffness 1 2  59.5 GPa  # C12 elastic constant 
+stiffness 6 6  69.3 GPa  # C44 elastic constant 
+
+# Phonon parameters (quasi-isotropic model), many suspicious values
+dyn -51.99 -87.39 47.96 64.43 GPa   # β, γ, λ, μ (interpolated, okay)
+scat 4.43e-42 s3      # Isotopic/alloy scattering coeff for 0.5-0.5, Garg et al. 2011
+decay 2.45e-55 s4     # Anharmonic decay coeff. (interpolated, suspicious)
+decayTT 0.74          # Fraction of LA phonon decays producing two transverse phonons (assumed same as Si)
+LDOS  0.0944          # Longitudinal phonon DOS fraction (interpolated, highly suspicious)
+STDOS 0.532           # “Slow” transverse phonon DOS fraction (interpolated, highly suspicious)
+FTDOS 0.373           # “Fast” transverse phonon DOS fraction (interpolated, highly suspicious)
+Debye 11.1 THz        # Debye cutoff frequency (interpolated, okay)
+
+# Charge carrier parameters
+bandgap 1.04 eV       # Bandgap with https://www.ioffe.ru/SVA/NSM/Semicond/SiGe/bandstr.html + Varshni
+pairEnergy 3.57 eV    # Average energy to create e–h pair (interpolated)
+fanoFactor 0.137      # Fano factor (interpolated)
+vsound 6930 m/s       # Longitudinal sound speed (using elasticity and mass density)
+vtrans 4630 m/s       # Transverse sound speed (using elasticity and mass density)
+hmass 0.50            # same as Si
+emass 0.91 0.19 0.19  # same as Si
+valleyDir 1 0 0       # same as Si
+valleyDir 0 1 0
+valleyDir 0 0 1
+
+# Intervalley scattering (matrix elements), mostly taken from Si
+alpha 0.5 /eV         # same as Si
+acDeform_e 9 eV       # same as Si 
+acDeform_h 5 eV       # same as Si
+ivDeform 0.5e8 0.8e8 11e8 0.3e8 2e8 2e8 eV/cm 			# same as Si
+ivEnergy 12.0e-3 18.4e-3 61.8e-3 18.9e-3 47.2e-3 58.8e-3 eV	# same as Si
+neutDens 1e11 /cm3     # same as Si
+epsilon 13.0           # interpolated
+
+# Intervalley scattering model (field-dependent), all taken from Si, OK
+ivModel Linear
+ivLinRate0  1.5e6 Hz   
+ivLinRate1  1.5 Hz
+ivLinPower  4.0       
+ivQuadRate  3.5e-20 Hz
+ivQuadField 3395 V/m   
+ivQuadPower 7.47       
