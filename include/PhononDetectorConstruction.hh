@@ -38,15 +38,15 @@ private:
 private:
 	G4Material* fGalactic;
 	G4Material* fSi;
+	G4Material* fSiGe;
+	G4Material* fAl;
 
 	G4VPhysicalVolume* fWorldPhys;
-	G4VPhysicalVolume* fSiSlab;
-	G4VPhysicalVolume* fSolidTrack;
+	G4VPhysicalVolume* fSiTest;
 	G4VPhysicalVolume* fabsorbLayer;
-
 	G4CMPSurfaceProperty* siVacuumSides;
 	G4CMPSurfaceProperty* siVacuumBottom;
-	G4CMPSurfaceProperty* trivialProp;
+
 	 G4CMPElectrodeSensitivity* electrodeSensitivity;
 
 	 G4bool fConstructed;

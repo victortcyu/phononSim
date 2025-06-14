@@ -19,7 +19,7 @@
 #include "G4UImanager.hh"
 #include "G4VisExecutive.hh"
 
-#include "PhononPhysicsList.hh"
+#include "G4CMPPhysicsList.hh"
 #include "G4CMPConfigManager.hh"
 #include "PhononActionInitialization.hh"
 #include "PhononConfigManager.hh"
@@ -37,7 +37,7 @@ int main(int argc,char** argv)
  PhononDetectorConstruction* detector = new PhononDetectorConstruction();
  runManager->SetUserInitialization(detector);
 
- G4VUserPhysicsList* physics = new PhononPhysicsList();
+ G4VUserPhysicsList* physics = new G4CMPPhysicsList();
  physics->SetCuts();
  runManager->SetUserInitialization(physics);
  

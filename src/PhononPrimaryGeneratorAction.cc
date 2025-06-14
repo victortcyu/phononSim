@@ -21,8 +21,6 @@
 #include "G4PhononTransSlow.hh"
 #include "G4PhononLong.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4MuonMinus.hh" 
-#include "G4MuonPlus.hh"
 
 using namespace std;
 
